@@ -1,0 +1,29 @@
+  <div class="modal-header">
+    <button ng-click="vm.graphical=false" type="button" class="close"><span aria-hidden="true">×</span></button>
+    <h4 class="modal-title">Statistics</h4>
+  </div>
+  <div class="modal-body">
+    <div ng-show="vm.error.graphical" class="alert alert-danger">
+      <i class="fa fa-ban"></i>
+      <button ng-click="vm.error.graphical = false" type="button" class="close">x</button>
+      {{vm.error.graphical}}
+    </div>
+    <div class="col-sm-10 col-sm-offset-1">
+      <div style="display: inline-table; marin: 20px;">
+        <span class="label label-default">Visualiser une autre période</span></br>
+        <select ng-options="month as month.label for month in vm.months track by month.month" ng-model="vm.monthSelected"></select>
+        <button class="btn btn-default btn-xs" ng-click="vm.showMore(vm.monthSelected.month, false)">View</button>
+      </div>
+      <div style="display: inline-table; marin: 20px;">
+        <span class="label label-default">Augmenter la période:</span></br>
+        <select ng-options="value as value for value in vm.rangeSelector track by value" ng-model="vm.rangeSelected"></select>
+        <button class="btn btn-default btn-xs" ng-click="vm.showMore(false, vm.rangeSelected)">View</button>
+      </div>
+      <div style="float: right; margin-right: 3px;" class="btn btn-xs btn-default">
+        <i class="fa fa-eur fa-2x"></i>
+        {{vm.priceForPeriod | number:2}}
+      </div>
+      <div class="byday" items="vm.kWhByDay" ng-show="vm.kWhByDay"></div>
+    </div>
+    <div class="clearfix"></div>
+  </div>

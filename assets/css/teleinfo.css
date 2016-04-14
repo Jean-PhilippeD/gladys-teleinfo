@@ -1,0 +1,52 @@
+.modal-teleinfo{
+  overflow: auto;
+  display: block; 
+  background:rgba(0,0,0,0.4)
+}
+
+.modal-graphical {
+  width:  80%;
+}
+
+.teleinfo {
+  display: inline-table;
+  text-align: center;
+}
+
+.input-teleinfo {
+  padding: 5px;
+}
+
+.config {
+  display: flex;
+  position: relative;
+  top: 0;
+  margin-bottom: 3px;
+}
+
+.price {
+  border: 1px solid #777;
+  color: #fff;
+  display: inline-table;
+  padding: 8px;
+  margin-right: 2px;
+  border-radius: 4px;
+  cursor: default;
+}
+
+.color {
+  border-radius: 4px;
+  color: #fff;
+  display: inline-table;
+  float: right;
+  font-size: 0.6em;
+  margin-right: 4px;
+}
+
+.color div {
+  border: 1px solid #777;
+  border-radius: 3px;
+  margin-bottom: 2px;
+  padding: 4px;
+  text-align: center;
+}

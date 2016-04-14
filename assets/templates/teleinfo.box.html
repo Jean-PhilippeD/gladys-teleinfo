@@ -1,0 +1,56 @@
+<div>
+  <div ng-show="vm.error.global" class="alert alert-danger">
+    <i class="fa fa-ban"></i>
+    <button ng-click="vm.error.global = false" type="button" class="close">x</button>
+    {{vm.error.global}}
+  </div>
+  <button class="btn btn-default btn-xs config" ng-click="vm.modal = true"><i class="fa fa-cog"></i></button>
+  <div ng-show="vm.isEmpty(vm.conso)" class="price" style="background-color: #eee">
+    <center>
+      <h3>
+        <i class="fa fa-spin fa-spinner"></i>
+      </h3>
+    </center>
+  </div>
+  <div ng-repeat="(key, value) in vm.conso" class="price" style="background-color: {{value.color}}" ng-if="value.value > 0">
+    <center>
+      <h3>
+        {{value.price | number:2}}
+        <i class="fa fa-eur"></i>
+      </h3>
+      {{value.value / 1000| number:2}} kWh
+    </center>
+  </div>
+  <div style="float:right;">
+    <button class="btn btn-default btn-xs" ng-click="vm.showMore()"><i class="fa fa-2x fa-eye"></i></button>
+  </div>
+  <div style="float: right; margin-right: 3px;" class="btn btn-xs btn-default">
+    <i class="fa fa-eur fa-2x"></i> 
+    {{vm.priceForMonth}}
+  </div> 
+  <div ng-show="vm.colorOfToday" class="color">
+    <div ng-style="{'background-color': vm.colorOfToday}">
+      Aujourd'hui
+    </div>
+    <div ng-show="vm.colorOfTomorrow" ng-style="{'background-color': vm.colorOfTomorrow}">
+      Demain
+    </div>
+  </div>
+  <div class="indexConso" newitems="vm.newItems" items="vm.indexItems"></div>
+</div>
+
+
+<!-- modal -->
+<div class="modal modal-teleinfo" ng-show="vm.modal">
+  <div class="modal-dialog">
+    <div ng-if="vm.modal" ng-include src="'hooks/teleinfo/templates/teleinfo.modal.html'" class="modal-content" id="teleinfo-modal-content"></div>
+  </div>
+</div><!-- modal -->
+
+<!-- graphical modal -->
+<div class="modal modal-teleinfo" ng-show="vm.graphical">
+  <div class="modal-dialog modal-graphical">
+    <div ng-if="vm.graphical" ng-include src="'hooks/teleinfo/templates/teleinfo.graphical.html'" class="modal-content" id="teleinfo-modal-content"></div>
+  </div>
+</div><!-- modal -->
+

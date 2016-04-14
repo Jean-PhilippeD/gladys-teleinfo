@@ -1,0 +1,138 @@
+/** 
+  * Gladys Project
+  * http://gladysproject.com
+  * Software under licence Creative Commons 3.0 France 
+  * http://creativecommons.org/licenses/by-nc-sa/3.0/fr/
+  * You may not use this software for commercial purposes.
+  * @author :: Jean-Philippe Danrée
+  */
+
+  
+module.exports = {
+
+  /**
+  * Retourne l'intensité et la puissance maximales pour la période donnée
+  * @method index
+  * @param {} dateBegin
+  * @param {} dateEnd
+  * @param {} callback
+  */
+  getMax : function(db, de, callback){
+    callback = callback || function(){};
+    var request = 'SELECT MAX(`PAPP`) as PAPP, MAX(`IINST`) as IINST ';
+    request += 'FROM teleinfo ';
+    request += 'WHERE UNIX_TIMESTAMP(datetime) BETWEEN UNIX_TIMESTAMP(?) AND UNIX_TIMESTAMP(?) ';
+    request += 'ORDER BY datetime';
+
+    Teleinfo.query(request, [db, de], function(err, result){
+      if(err) return callback(err);
+      callback(null, result);                
+    })
+  },
+
+  /**
+  * Get sum of consumtion per day for a given period
+  * @method index
+  * @param {} dateBegin
+  * @param {} dateEnd
+  * @param {} optarif
+  * @param {} callback
+  */
+  getSumPerDay : function(db, de, optarif, callback){
+    callback = callback || function(){};
+    var request = 'SELECT UNIX_TIMESTAMP(datetime) AS TIMESTAMP, DATE_FORMAT(datetime, \'%a %e\') AS PERIODE, ';
+
+    switch(optarif) {
+      case 'BASE':
+        request += 'ROUND(((MAX(`BASE`) - MIN(`BASE`)) / 1000), 1) AS BASE';
+        break;
+      case 'EJP':
+        request += 'ROUND(((MAX(`EJPHN`) - MIN(`EJPHN`)) / 1000), 1) AS EJPHN, ';
+        request += 'ROUND(((MAX(`EJPHPM`) - MIN(`EJPHPM`)) / 1000), 1) AS EJPHPM ';
+        break;
+      case 'BBR':
+        request += 'ROUND(((MAX(`BBRHCJB`) - MIN(`BBRHCJB`)) / 1000), 1) AS BBRHCJB, ';
+        request += 'ROUND(((MAX(`BBRHPJB`) - MIN(`BBRHPJB`)) / 1000), 1) AS BBRHPJB, ';
+        request += 'ROUND(((MAX(`BBRHCJW`) - MIN(`BBRHCJW`)) / 1000), 1) AS BBRHCJW, ';
+        request += 'ROUND(((MAX(`BBRHPJW`) - MIN(`BBRHPJW`)) / 1000), 1) AS BBRHPJW, ';
+        request += 'ROUND(((MAX(`BBRHCJR`) - MIN(`BBRHCJR`)) / 1000), 1) AS BBRHCJR, ';
+        request += 'ROUND(((MAX(`BBRHPJR`) - MIN(`BBRHPJR`)) / 1000), 1) AS BBRHPJR ';
+        break;
+      case 'HCHP':
+        request += 'ROUND(((MAX(`HCHC`) - MIN(`HCHC`)) / 1000), 1) AS HCHC, ';
+        request += 'ROUND(((MAX(`HCHP`) - MIN(`HCHP`)) / 1000), 1) AS HCHP ';
+        break;
+      default:
+    }
+
+    request += 'FROM teleinfo';
+    request += 'WHERE UNIX_TIMESTAMP(datetime) BETWEEN UNIX_TIMESTAMP(?) AND UNIX_TIMESTAMP(?) ';
+    request += 'ORDER BY PERIODE, datetime';
+
+    Teleinfo.query(request, [db, de], function(err, result){
+      if(err) return callback(err);
+      callback(null, result);
+    })
+  },
+
+  /**
+  * Get all values of consumtion for last n dayx
+  * @method index
+  * @param {} dateBegin
+  * @param {} dateEnd
+  * @param {} optarif
+  * @param {} callback
+  */
+
+  getLastNDays : function(delta, optarif, callback){
+    callback = callback || function(){};
+    var request = 'SELECT UNIX_TIMESTAMP(datetime) AS TIMESTAMP, ';
+    var opt = {
+      'BASE' : ['BASE'],
+      'EJP'  : ['EJPHN','EJPHPM'],
+      'BBR'  : ['BBRHCJB','BBRHPJB','BBRHCJW','BBRHPJW','BBRHCJR','BBRHPJR'],
+      'HCHP' : ['HCHC','HCHP']
+    } 
+    // Build list From depending on Option Tarifaire 
+    var from = '';
+    for(var i = 0 ; i < opt[optarif].length; i++) {
+      from += opt[optarif][i] + ',';
+    }
+    // Remove last ,
+    request += from.slice(0, -1);
+    request += ' FROM teleinfo ';
+    request += ' WHERE datetime >= NOW() - INTERVAL ? DAY ';
+    request += ' ORDER BY TIMESTAMP, datetime';
+
+    var finalObj = {};
+    var timestampArray = [];
+    var dataArray = [];
+    // Query table
+    Teleinfo.query(request, [delta], function(err, result){
+      if(err) return callback(err);
+      for(var i = 0; i < result.length; i++) {
+        if(i == 0) continue;
+        // Push into array the date time of the value
+        timestampArray.push(result[i].TIMESTAMP);
+        for(var j = 0 ; j < opt[optarif].length; j++) {
+          // Create array for current Tarif (Heure creuse, Heure pleine...)
+          if(!dataObj[opt[optarif][j]]) dataObj[opt[optarif][j]] = [];
+          // Sometimes, the date stored is 'null', if so, insert null instead of negative value
+          if(result[i][opt[optarif][j]] != 'null' || result[i-1][opt[optarif][j]] != 'null') {
+            // Count the wH consume on the period
+            var val = result[i][opt[optarif][j]] - result[i-1][opt[optarif][j]];
+            if(val == '0') val = 'null';
+            dataObj[opt[optarif][j]].push(val);
+          } else {
+            dataObj[opt[optarif][j]].push('null');
+          } 
+        }
+      }
+      finalObj = {
+        date : timestampArray,
+        data : dataArray
+      }
+      callback(null, finalObj);
+    })
+  }
+};

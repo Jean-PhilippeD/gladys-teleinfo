@@ -1,0 +1,12 @@
+{
+  "name": "Gladys-Teleinfo",
+  "version": "0.0.1",
+  "description": "Teleinfo on Gladys",
+  "keywords": [],
+  "dependencies": {
+    "teleinfo": "~0.2.0",
+    "async": "^1.5.0"
+  },
+  "author": "JP",
+  "license": "Creative Commons 3.0 France"
+}
