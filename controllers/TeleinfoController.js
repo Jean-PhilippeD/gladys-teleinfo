@@ -80,7 +80,7 @@ sails.config.Event.on('sailsReady', function() {
             }
             if(!result[0]){
               TeleinfoContract.create(contract, function(err, res) {
-                if(err) sails.log.warn('Teleinfo : Contract information has changed but Gladys has failed to add a row, error: ' + err);
+                if(err) sails.log.warn('Teleinfo : Trying to add new contract information but Gladys has failed to add a row, error: ' + err);
                 sails.log.info('Teleinfo : populating contract table.');
               })
             } else if(result[0].ADCO != contract.ADCO || result[0].OPTARIF != contract.OPTARIF || result[0].ISOUSC != contract.ISOUSC) { 
