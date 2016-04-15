@@ -35,9 +35,14 @@ sails.config.Event.on('sailsReady', function() {
       sails.log.error(err);
       return;
     }
-    if(config[0].tty) {
-      tty = config[0].tty;
-      lasttimestamp = timestamp - step*1000;
+    if(config[0]) {
+      if(config[0].tty) {
+        tty = config[0].tty;
+        lasttimestamp = timestamp - step*1000;
+      } else {
+        sails.log.warn('Teleinfo : You really should define the Teleinfo Device as /dev/ttyXX in database if you want to collect data!');
+        return;
+      }
     } else {
       sails.log.warn('Teleinfo : You really should define the Teleinfo Device as /dev/ttyXX in database if you want to collect data!');
       return;
@@ -365,6 +370,13 @@ module.exports = {
     res.json({message: message});
   },
 
+  /**
+  * Update device config 
+  * @method update 
+  * @param req
+  * @param res
+  */
+
   update : function(req, res) {
     if(req.param('data').what === 'step') var data = {step : req.param('data').val};
     if(req.param('data').what === 'retention') var data = {retention : req.param('data').val};
@@ -373,6 +385,13 @@ module.exports = {
       if(err) return res.send(400, err);
     });
   },
+
+  /**
+  * Destroy config 
+  * @method destroy
+  * @param req
+  * @param res
+  */
 
   destroy : function(req, res) {
     if(!req.param('id')) return res.json(400,null);
@@ -387,6 +406,12 @@ module.exports = {
       });
     });
   },
+
+  /**
+  * @method add 
+  * @param req
+  * @param res
+  */
 
   add: function(req, res) {
     TeleinfoConfig.create(req.param('data'), function(err, data) {
@@ -460,17 +485,19 @@ module.exports = {
         }
       }
       // Get color of today
-      switch(data[0].color) {
-        case 'BLAN':
-          result.today = sails.config.teleinfo.colors.HPJW; 
-          break;
-        case 'BLEU':
-          result.today = sails.config.teleinfo.colors.HPJB;
-          break;
-        case 'ROUG':
-          result.today = sails.config.teleinfo.colors.HPJR;
-        default:
-          result.today = '#eee';
+      if(data[0]) {
+        switch(data[0].color) {
+          case 'BLAN':
+            result.today = sails.config.teleinfo.colors.HPJW; 
+            break;
+          case 'BLEU':
+            result.today = sails.config.teleinfo.colors.HPJB;
+            break;
+          case 'ROUG':
+            result.today = sails.config.teleinfo.colors.HPJR;
+          default:
+            result.today = '#eee';
+        }
       }
       return res.json(result);
     });
