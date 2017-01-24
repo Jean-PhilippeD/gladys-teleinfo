@@ -4,6 +4,6 @@
  */
 
 module.exports.policies = {
-	TeleinfoController: ['checkToken', 'Human']
+  TeleinfoController: ['checkToken']
 };
 

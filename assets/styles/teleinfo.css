@@ -1,0 +1,70 @@
+.teleinfo-panel {
+    display: inline-table!important;
+}
+
+.teleinfo-content {
+    border-radius: 5px;
+    float: left;
+    font-size: 1em;
+    height: 45px;
+    margin-right: 10px;
+    margin-top: 10px;
+    text-align: center;
+    width: 150px;
+    display: inline-flex;
+}
+
+.teleinfo-content > span.teleinfo-span {
+    background: #3c8dbc !important;
+    height: 100% !important;
+    width: 40% !important;
+    display: table;
+    color: #fff;
+}
+
+.teleinfo-icon {
+    text-align: ;
+    top: 10px;
+    position: relative;
+    font-size: 1.5em;
+}
+
+.teleinfo-text {
+    text-transform: uppercase;
+    display: block;
+    font-size: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.teleinfo-data {
+    display: block;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.teleinfo-value {
+  border: 10px solid #fff;
+  width: 60%
+}
+.teleinfo-danger {
+   border: 10px solid #f56954;
+   width: 60%;
+   background: #888;
+   color: #fff;
+}
+
+.teleinfo-warning {
+   border: 10px solid #f39c12;
+   width: 60%;
+   background: #888;
+   color: #fff;
+}
+
+.teleinfo-normal {
+  border: 10px solid #888;
+  width: 60%;
+  background: #888;
+  color: #fff;
+}
