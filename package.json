@@ -1,6 +1,6 @@
 {
   "name": "gladys-teleinfo",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Gladys hooks to handle teleinfo device.",
   "main": "index.js",
   "scripts": {
