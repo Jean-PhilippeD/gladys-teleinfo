@@ -7,11 +7,11 @@
     float: left;
     font-size: 1em;
     height: 45px;
-    margin-right: 10px;
-    margin-top: 10px;
+    margin-right: 20px;
     text-align: center;
-    width: 150px;
+    width: 145px;
     display: inline-flex;
+    padding: 3px;
 }
 
 .teleinfo-content > span.teleinfo-span {
@@ -67,4 +67,17 @@
   width: 60%;
   background: #888;
   color: #fff;
+}
+
+.teleinfo-color-calendar {
+  width: 20px;
+  height: 20px;
+  margin: 1px;
+  position: relative;
+  display: inline-table;
+  border: 1px grey solid;
+}
+
+.teleinfo-see-detail {
+  margin-top: 10px;
 }

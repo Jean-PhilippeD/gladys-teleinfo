@@ -8,7 +8,8 @@ var translationsEN = {
   TOMORROW: 'Tomorrow\'s color',
   IINST: 'Instant Intensity',
   PAPP: 'Instant Power',
-  CURRENT_PRICE: 'Day price'
+  CURRENT_PRICE: 'Day price',
+  COLOR_PLANNING: 'Color\'s planning'
 };
 var translationsFR = {
   TELEINFO_PLUS: 'Données Téléinfo',
@@ -20,7 +21,8 @@ var translationsFR = {
   TOMORROW: 'Couleur de Demain',
   IINST: 'Intensité instantanée',
   PAPP: 'Puissance instantanée',
-  CURRENT_PRICE: 'Prix de la journée'
+  CURRENT_PRICE: 'Prix de la journée',
+  COLOR_PLANNING: 'Planning des couleurs'
 };
 
 angular
@@ -30,4 +32,3 @@ angular
   $translateProvider.translations('en', translationsFR);
   $translateProvider.translations('en', translationsEN);
 }]);
-

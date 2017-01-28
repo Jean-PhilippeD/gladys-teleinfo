@@ -26,12 +26,18 @@
     vm.teleinfo = {};
     vm.deviceTypes = {sum:[], index: []};
     vm.months = [];
+    vm.years = [];
     vm.selectedMonth = false;
+    vm.selectedYears = false;
+    vm.colorArray= [];
+    vm.dateColor = '';
 
     /* Method */
     vm.watchMore = watchMore;
     vm.getWattPerHour = getWattPerHour;
     vm.getKvaPerDay = getKvaPerDay;
+    vm.getKvaPerMonth = getKvaPerMonth;
+    vm.showDetail = showDetail;
 
     activate();
 
@@ -49,9 +55,8 @@
             if(deviceStates[i].identifier.match(/index/)) {
               for(var j = 0; j < vm.deviceTypes.index.length; j++) {
                 if(vm.deviceTypes.index[j].tag === deviceStates[i].identifier) {
-                  vm.dayCost.value += deviceStates[i].value - vm.deviceTypes.index[j].last;
-                  vm.dayCost.price = vm.dayCost.value * vm.dayCost.kwh;
                   vm.deviceTypes.index[j].last = deviceStates[i].value;
+                  vm.dayCost += (deviceStates[i].value - vm.deviceTypes.index[j].last) / 1000 * vm.deviceTypes.index[j].cost;
                 }
               }
             } else {
@@ -96,9 +101,9 @@
           if(deviceTypes.data[i].tag === 'ptec') vm.deviceTypes.ptec = deviceTypes.data[i].id;
           if(deviceTypes.data[i].tag === 'isousc') vm.deviceTypes.isousc = deviceTypes.data[i].id;
           if(deviceTypes.data[i].tag === 'iinst') vm.deviceTypes.iinst = deviceTypes.data[i].id;
-          if(deviceTypes.data[i].tag === 'tomorrow') vm.deviceTypes.tomorrow= deviceTypes.data[i].id;
-          if(deviceTypes.data[i].tag.match(/sum/)) vm.deviceTypes.sum.push({id: deviceTypes.data[i].id, data: deviceTypes.data[i].tag});
-          if(deviceTypes.data[i].tag.match(/index/)) vm.deviceTypes.index.push({id: deviceTypes.data[i].id, data: deviceTypes.data[i].tag});
+          if(deviceTypes.data[i].tag === 'tomorrow') vm.deviceTypes.tomorrow = deviceTypes.data[i].id;
+          if(deviceTypes.data[i].tag.match(/sum/)) vm.deviceTypes.sum.push({id: deviceTypes.data[i].id, tag: deviceTypes.data[i].tag});
+          if(deviceTypes.data[i].tag.match(/index/)) vm.deviceTypes.index.push({id: deviceTypes.data[i].id, tag: deviceTypes.data[i].tag});
         }
 
         return deviceService.getStates(vm.deviceTypes.papp);
@@ -116,9 +121,10 @@
       .then(function(isousc) {
         // Get isousc values (keep the array to know when the user changed intensity
         vm.teleinfo.isousc = isousc.data;
-        return deviceService.getStates(vm.deviceTypes.tomorrow);
+        return deviceService.getStates(vm.deviceTypes.tomorrow, 0, 1000);
       })
       .then(function(result) {
+        vm.allColors = result.data;
         // Get color of today and tomorrow
         var now = new Date().setHours(0,0,0,0);
         if(new Date(result.data[0].dateFormat).setHours(0,0,0,0) >= now) {
@@ -133,12 +139,12 @@
       .then(function(prices) {
         // Get prcies array
         vm.prices = prices;
-        vm.dayCost = {value: 0, price: 0};
+        vm.dayCost = 0;
         var today = new Date().setHours(0,0,0,0);
         angular.forEach(vm.deviceTypes.index, function(index) {
           var p;
           for(var key in color) {
-            if(index.data.match(new RegExp(color[key].tag, "g"))) {
+            if(index.tag.match(new RegExp(color[key].tag, "g"))) {
               p = key;
             }
           }
@@ -146,27 +152,40 @@
           .then(function(values) {
             getPtecPrice(today, p)
             .then(function(price) {
-              index.last = values.data.reverse().reduce(function(a,b,i) {
-                var da = new Date(a.dateFormat).setHours(0,0,0,0) ;
-                var db = new Date(b.dateFormat).setHours(0,0,0,0);
-                if(da < today && db === today) vm.dayCost.value = a.value;
-                if(da === today && db > today) vm.dayCost.value = b.value - vm.dayCost.value;
-                if(da === today && i === values.data.length-1 && db === today) vm.dayCost.value = b.value - vm.dayCost.value;
-                return b;
+
+              var todayValues = values.data.filter(function(item) {
+                var d = new Date(item.dateFormat).setHours(0,0,0,0);
+                if(d === today) {
+                  return true;
+                } else {
+                  return false;
+                }
               });
-              vm.dayCost.price += vm.dayCost.value /1000 * price.kwh / 100;
-              vm.dayCost.kwh = price.kwh/100;
+              index.cost = price.kwh / 100;
+              if(todayValues.length > 0) {
+                index.last = todayValues[0].value;
+                var val = parseInt(todayValues[0].value) - parseInt(todayValues[todayValues.length-1].value);
+                vm.dayCost += val / 1000 * price.kwh / 100;
+              }
             });
           });
         });
       });
     }
 
-
+    function showDetail() {
+      if(vm.colorArray.length === 0) {
+        for(var i = 0; i < vm.allColors.length;i++) {
+          vm.colorArray.push({date: vm.allColors[i].dateFormat, color: color[vm.allColors[i].value.toString()].color});
+        }
+      }
+      vm.more = true;
+    }
 
     function watchMore() {
       getWattPerHour();
       getKvaPerDay();
+      getKvaPerMonth();
     }
 
     function getWattPerHour(h) {
@@ -317,11 +336,10 @@
         }
       };
 
-      vm.labels = [];
-      vm.colors= [];
-      vm.data = [[],[]];
-
-      vm.datasets = [
+      vm.dayLabels = [];
+      vm.dayColors = [];
+      vm.dayData = [[],[]];
+      vm.dayDatasets = [
         {
           type: 'line',
           label: '€',
@@ -362,10 +380,10 @@
           id: index.id
         };
 
-        vm.data.push([]);
-        vm.datasets.push(datasets);
+        vm.dayData.push([]);
+        vm.dayDatasets.push(datasets);
 
-        var idx = vm.datasets.indexOf(datasets);
+        var idx = vm.dayDatasets.indexOf(datasets);
 
         deviceService.getStates(index.id, 0, 1000)
         .then(function(result) {
@@ -375,13 +393,13 @@
             var p = {key: false};
 
             for(var key in color) {
-              if(index.data.match(new RegExp(color[key].tag, "g"))) {
+              if(index.tag.match(new RegExp(color[key].tag, "g"))) {
                 p.key = key;
-                vm.datasets[idx].label = color[key].title + ' (€)';
-                vm.datasets[idx].backgroundColor = color[key].color;
-                vm.datasets[idx].borderColor = color[key].color;
-                vm.datasets[idx].hoverBackgroundColor = color[key].color;
-                vm.datasets[idx].hoverBorderColor = color[key].color;
+                vm.dayDatasets[idx].label = color[key].title + ' (€)';
+                vm.dayDatasets[idx].backgroundColor = color[key].color;
+                vm.dayDatasets[idx].borderColor = color[key].color;
+                vm.dayDatasets[idx].hoverBackgroundColor = color[key].color;
+                vm.dayDatasets[idx].hoverBorderColor = color[key].color;
               }
             }
           }
@@ -394,8 +412,8 @@
               vm.months.push(moment(kva.dateFormat).format('MMMM YYYY'));
             }
             if(moment(kva.dateFormat).format('MMMM YYYY') === period) {
-              if(!vm.labels[i]) {
-                vm.labels[i] = moment(kva.dateFormat).format('dddd Do MMMM');
+              if(!vm.dayLabels[i]) {
+                vm.dayLabels[i] = moment(kva.dateFormat).format('dddd Do MMMM');
                 i++;
               }
 
@@ -404,12 +422,188 @@
               .then(function(prices) {
                 p.prices = prices;
                 var euro = (kva.value/1000*p.prices.kwh/100);
-                vm.data[idx].push(Number(euro.toFixed(2)));
+                vm.dayData[idx].push(Number(euro.toFixed(2)));
                 j++;
-                if(!vm.data[0][j]) vm.data[0][j] = 0;
-                if(!vm.data[1][j]) vm.data[1][j] = 0;
-                vm.data[1][j] += Number(kva.value);
-                vm.data[0][j] += Number(euro.toFixed(2));
+                if(!vm.dayData[0][j]) vm.dayData[0][j] = 0;
+                if(!vm.dayData[1][j]) vm.dayData[1][j] = 0;
+                vm.dayData[1][j] += Number(kva.value);
+                vm.dayData[0][j] += Number(euro.toFixed(2));
+              });
+            }
+          });
+        });
+      });
+    }
+
+    function getKvaPerMonth(period) {
+      vm.chartKvaPerMonthOptions = {
+        responsive: true,
+        elements: {
+          line: {
+            fill: false
+          }
+        },
+        scales: {
+          xAxes: [{
+            display: true,
+            gridLines: {
+              display: false
+            },
+            labels: {
+              show: true,
+            },
+            stacked: true
+          }],
+          yAxes: [{
+            type: "linear",
+            display: true,
+            position: "left",
+            id: "y-axis-1",
+            gridLines:{
+              display: false
+            },
+            labels: {
+              show:true,
+           },
+            stacked: true,
+          },
+          {
+            type: "linear",
+            display: true,
+            position: "right",
+            id: "y-axis-2",
+            gridLines:{
+              display: false
+            },
+            labels: {
+              show:true,
+            }
+          }]
+        }
+      };
+
+      vm.monthLabels = [];
+      vm.monthColors = [];
+      vm.monthData = [[],[], []];
+      vm.monthDatasets = [
+        {
+          type: 'line',
+          label: '€',
+          borderWidth: 2,
+          fill: false,
+          data: [],
+          yAxisID: 'y-axis-1',
+          borderColor: '#EC932F',
+          backgroundColor: '#EC932F',
+          pointBorderColor: '#EC932F',
+          pointBackgroundColor: '#EC932F',
+          pointHoverBackgroundColor: '#EC932F',
+          pointHoverBorderColor: '#EC932F'
+        },
+        {
+          type: 'line',
+          label: 'KvA',
+          borderWidth: 2,
+          fill: false,
+          yAxisID: 'y-axis-2',
+          borderColor: '#71B37C',
+          backgroundColor: '#71B37C',
+          pointBorderColor: '#71B37C',
+          pointBackgroundColor: '#71B37C',
+          pointHoverBackgroundColor: '#71B37C',
+          pointHoverBorderColor: '#71B37C'
+        },
+        {
+          type: 'bar',
+          label: 'Abonnement',
+          borderWidth: 1,
+          fill: false,
+          yAxisID: 'y-axis-1',
+          borderColor: '#00ffff',
+          backgroundColor: '#00ffff',
+          pointBorderColor: '#00ffff',
+          pointBackgroundColor: '#00ffff',
+          pointHoverBackgroundColor: '#00ffff',
+          pointHoverBorderColor: '#00ffff'
+        }
+      ];
+
+      if(!period) period = moment().format('YYYY');
+
+      angular.forEach(vm.deviceTypes.sum, function(index) {
+        var datasets = {
+          type: 'bar',
+          borderWidth: 1,
+          fill: false,
+          yAxisID: 'y-axis-1',
+          id: index.id
+        };
+
+        vm.monthData.push([]);
+        vm.monthDatasets.push(datasets);
+
+        var idx = vm.monthDatasets.indexOf(datasets);
+
+        deviceService.getStates(index.id, 0, 1000)
+        .then(function(result) {
+          result = result.data.reverse();
+          if(result.length > 0) {
+
+            var p = {key: false};
+
+            for(var key in color) {
+              if(index.tag.match(new RegExp(color[key].tag, "g"))) {
+                p.key = key;
+                vm.monthDatasets[idx].label = color[key].title + ' (€)';
+                vm.monthDatasets[idx].backgroundColor = color[key].color;
+                vm.monthDatasets[idx].borderColor = color[key].color;
+                vm.monthDatasets[idx].hoverBackgroundColor = color[key].color;
+                vm.monthDatasets[idx].hoverBorderColor = color[key].color;
+              }
+            }
+          }
+          var i=0;
+          var j=-1;
+
+          // gonna build a array with concatenated data per month
+          var dataPerDayOverMonths = {};
+          var month = false;
+          for(var u = 0; u < result.length; u++) {
+            // Build year array for select option
+            if(vm.years.indexOf(moment(result[u].dateFormat).format('YYYY')) === -1) {
+              vm.years.push(moment(result[u].dateFormat).format('YYYY'));
+            }
+            // concatenate values over month
+            if(!dataPerDayOverMonths[moment(result[u].dateFormat).format('MMMM YYYY')]) {
+              dataPerDayOverMonths[moment(result[u].dateFormat).format('MMMM YYYY')] = {
+                year : moment(result[u].dateFormat).format('YYYY'),
+                dateFormat : moment(result[u].dateFormat).format('YYYY-MM-DD 00:00:00'),
+                value : result[u].value
+              };
+            } else {
+              dataPerDayOverMonths[moment(result[u].dateFormat).format('MMMM YYYY')].value += result[u].value;
+            }
+          }
+
+          angular.forEach(dataPerDayOverMonths,function(kva, month) {
+            if(kva.year === period) {
+              if(!vm.monthLabels[i]) {
+                vm.monthLabels[i] = month;
+                i++;
+              }
+
+              getPtecPrice(kva.dateFormat, p.key)
+              .then(function(prices) {
+                var abo = prices.abo / 12;
+                p.prices = prices;
+                var euro = (kva.value/1000*p.prices.kwh/100);
+                vm.monthData[idx].push(Number(euro.toFixed(2)));
+                j++;
+                if(!vm.monthData[0][j]) vm.monthData[0][j] = abo;
+                if(!vm.monthData[1][j]) vm.monthData[1][j] = 0;
+                if(!vm.monthData[2][j]) vm.monthData[2][j] = abo;
+                vm.monthData[1][j] += Number(kva.value);
+                vm.monthData[0][j] += Number(euro.toFixed(2));
               });
             }
           });
