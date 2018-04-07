@@ -303,9 +303,6 @@
             gridLines: {
               display: false
             },
-            labels: {
-              show: true,
-            },
             stacked: true
           }],
           yAxes: [{
@@ -316,9 +313,6 @@
             gridLines:{
               display: false
             },
-            labels: {
-              show:true,
-           },
             stacked: true,
           },
           {
@@ -328,9 +322,6 @@
             id: "y-axis-2",
             gridLines:{
               display: false
-            },
-            labels: {
-              show:true,
             }
           }]
         }
@@ -359,6 +350,7 @@
           label: 'KvA',
           borderWidth: 2,
           fill: false,
+          data: [],
           yAxisID: 'y-axis-2',
           borderColor: '#71B37C',
           backgroundColor: '#71B37C',
@@ -374,10 +366,12 @@
       angular.forEach(vm.deviceTypes.sum, function(index) {
         var datasets = {
           type: 'bar',
+          label: '',
           borderWidth: 1,
           fill: false,
           yAxisID: 'y-axis-1',
-          id: index.id
+          id: index.id,
+          data: []
         };
 
         vm.dayData.push([]);
@@ -449,9 +443,6 @@
             gridLines: {
               display: false
             },
-            labels: {
-              show: true,
-            },
             stacked: true
           }],
           yAxes: [{
@@ -462,9 +453,6 @@
             gridLines:{
               display: false
             },
-            labels: {
-              show:true,
-           },
             stacked: true,
           },
           {
@@ -474,9 +462,6 @@
             id: "y-axis-2",
             gridLines:{
               display: false
-            },
-            labels: {
-              show:true,
             }
           }]
         }
@@ -511,7 +496,8 @@
           pointBorderColor: '#71B37C',
           pointBackgroundColor: '#71B37C',
           pointHoverBackgroundColor: '#71B37C',
-          pointHoverBorderColor: '#71B37C'
+          pointHoverBorderColor: '#71B37C',
+          data: []
         },
         {
           type: 'bar',
@@ -524,7 +510,8 @@
           pointBorderColor: '#00ffff',
           pointBackgroundColor: '#00ffff',
           pointHoverBackgroundColor: '#00ffff',
-          pointHoverBorderColor: '#00ffff'
+          pointHoverBorderColor: '#00ffff',
+          data: []
         }
       ];
 
@@ -536,7 +523,8 @@
           borderWidth: 1,
           fill: false,
           yAxisID: 'y-axis-1',
-          id: index.id
+          id: index.id,
+          data: []
         };
 
         vm.monthData.push([]);

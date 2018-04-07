@@ -1,0 +1,150 @@
+<div data-ng-controller="teleinfoCtrl as vm">
+  <div class="box">
+    <div class="box-header with-border">
+      <h3 class="box-title">Conso EDF</h3>&nbsp;<small>({{ 'CONTRACT_NUMBER' | translate}} {{ vm.teleinfo.contract}})</small><br/>
+      <div class="box-tools pull-right">
+         <button ng-click="vm.watchMore()" data-target=".teleinfo-modal" data-toggle="modal" type="button" class="btn btn-box-tool"><i class="fa fa-eye"></i></button>
+      </div>
+    </div>
+    <div class="box-body">
+      <div class="row">
+        <div class="col-md-5">
+          <div class="info-box">
+            <span class="info-box-icon" ng-class="(100 * vm.teleinfo.iinst) / vm.teleinfo.isousc > 80 ? 'teleinfo-danger' : (100 * vm.teleinfo.iinst) / vm.teleinfo.isousc > 50 ? 'teleinfo-warning': 'bg-aqua'"><i class="fa fa-plug"></i></span>
+  
+            <div class="info-box-content">
+               <span class="info-box-text">{{ 'IINST' | translate }}</span>
+               <span class="info-box-number" ng-show="vm.teleinfo.iinst" >{{vm.teleinfo.iinst}} <small>a</small></span>
+               <span class="info-box-number" ng-show="!vm.teleinfo.iinst"><i class="fa-spinner fa fa-spin"></i></span>
+            </div>
+            <!-- /.info-box-content -->
+          </div>
+       </div>
+       <div class="col-md-5">
+          <div class="info-box">
+            <span class="info-box-icon" ng-class="(100 * vm.teleinfo.papp) / (vm.teleinfo.isousc *220) > 80 ? 'teleinfo-danger' : (100 * vm.teleinfo.papp) / (vm.teleinfo.isousc * 220) > 50 ? 'teleinfo-warning': 'bg-aqua'"><i class="fa fa-flash"></i></span>
+  
+            <div class="info-box-content">
+               <span class="info-box-text">{{ 'PAPP' | translate }}</span>
+               <span class="info-box-number" ng-show="vm.teleinfo.papp" >{{vm.teleinfo.papp}} <small>W</small></span>
+               <span class="info-box-number" ng-show="!vm.teleinfo.papp"><i class="fa-spinner fa fa-spin"></i></span>
+            </div>
+            <!-- /.info-box-content -->
+          </div>
+       </div>
+       <div class="col-md-5">
+          <div class="info-box">
+            <span class="info-box-icon" style="background: {{vm.teleinfo.now}}!important;"><i class="fa fa-calendar"></i></span>
+  
+            <div class="info-box-content">
+               <span class="info-box-text">{{ 'TOMORROW' | translate }}</span>
+               <span class="info-box-number" ng-show="vm.teleinfo.tomorrow" style="color: {{vm.teleinfo.tomorrow}}!important;"><i class="fa fa-circle"></i></span>
+               <span class="info-box-number" ng-show="!vm.teleinfo.tomorrow"><i class="fa-spinner fa fa-spin"></i></span>
+            </div>
+            <!-- /.info-box-content -->
+          </div>
+       </div>
+       <div class="col-md-5">
+          <div class="info-box">
+            <span class="info-box-icon bg-aqua"><i class="fa fa-eur"></i></span>
+  
+            <div class="info-box-content">
+               <span class="info-box-text">{{ 'CURRENT_PRICE' | translate }}</span>
+               <span class="info-box-number" ng-show="vm.dayCost">{{vm.dayCost | number:2}} <small>€</small></span>
+               <span class="info-box-number" ng-show="!vm.dayCost"><i class="fa-spinner fa fa-spin"></i></span>
+            </div>
+            <!-- /.info-box-content -->
+          </div>
+       </div>
+    </div>
+  </div>
+  <div class="box-footer">
+    <div class="btn-group">
+      <button ng-click="vm.showDetail()" type="button" class="btn btn-box-tool" ng-show="!vm.more"><i class="fa fa-chevron-down"></i></button>
+      <button ng-click="vm.more = false" type="button" class="btn btn-box-tool" ng-show="vm.more"><i class="fa fa-chevron-up"></i></button>
+    </div>
+    <span class="badge" ng-show="vm.more">{{ 'COLOR_PLANNING' | translate}}:&nbsp{{ vm.dateColor}}</span>
+    <div ng-show="vm.more" style="margin-top: 10px;">
+      <div ng-repeat="item in vm.colorArray track by item.date" style="background: {{ item.color }}" class="teleinfo-color-calendar" ng-mouseover="vm.dateColor = item.date" ng-mouseleave="vm.dateColor = ''"></div>
+    </div>
+  </div>
+  <!-- Box Modal page -->
+  <div id="modal-teleinfo" class="modal fade in teleinfo-modal" aria-hidden="false" aria-labelledby="myLargeModalLabel" role="dialog" tabindex="-1">
+   <div class="modal-dialog modal-lg">
+     <div class="modal-content">
+       <div class="modal-header">
+         <button class="close" aria-label="Close" data-dismiss="modal" type="button">
+           <span aria-hidden="true">×</span>
+         </button>
+         <h4 id="myLargeModalLabel" class="modal-title">{{ 'TELEINFO_PLUS' | translate }}</h4>
+       </div>
+     <!-- Body Error -->
+       <div class="modal-body">
+         <div ng-show="vm.error" class="alert alert-danger">
+           <i class="fa fa-ban"></i>
+           <button ng-click="vm.error = !vm.error" type="button" class="close">x</button>
+           {{vm.error | errorToString}}
+         </div>
+     <!-- Body content -->
+         <div class="col-sm-12">
+           <h3>{{ 'TELEINFO_WATT_LINE_TITLE' | translate}}</h3><br>
+           <div style="float: right">
+             <button class="btn btn-xs bg-light-blue" ng-click="vm.getWattPerHour(6)">6h</button>
+             <button class="btn btn-xs bg-yellow" ng-click="vm.getWattPerHour(24)">24h</button>
+             </br>
+           </div>
+           <i class="fa fa-spinner fa-spin fa-2x" ng-show="vm.chartWattPerHour.data.length === 0"></i>
+           <canvas
+             ng-show="vm.chartWattPerHour.data.length > 0"
+             chart-options="vm.lineOptions"
+             id="bar"
+             class="chart chart-line"
+             chart-data="vm.chartWattPerHour.data"
+             chart-labels="vm.chartWattPerHour.labels"
+             chart-colors="vm.lineColorsWattPerHour"
+           >
+           </canvas>
+           <h3>{{ 'TELEINFO_PRICE_PER_DAY_BAR_TITLE' | translate}}</h3><br>
+           <div style="float: right">
+             <select ng-options="month as month for month in vm.months" ng-model="vm.selectedMonth"></select>
+             <button class="btn btn-xs bg-light-blue" ng-click="vm.getKvaPerDay(vm.selectedMonth)">>></button>
+             </br>
+           </div>
+           <i class="fa fa-spinner fa-spin fa-2x" ng-show="vm.dayData.length < 3"></i>
+           <canvas
+             ng-show="vm.dayData.length > 2"
+             chart-options="vm.chartKvaPerDayOptions"
+             chart-legend="true"
+             chart-labels="vm.dayLabels"
+             chart-data="vm.dayData"
+             id="bar"
+             class="chart chart-bar"
+             chart-dataset-override="vm.dayDatasets"
+           >
+           </canvas>
+           <h3>{{ 'TELEINFO_PRICE_PER_MONTH_BAR_TITLE' | translate}}</h3><br>
+           <div style="float: right">
+             <select ng-options="year as year for year in vm.years" ng-model="vm.selectedYears"></select>
+             <button class="btn btn-xs bg-light-blue" ng-click="vm.getKvaPerMonth(vm.selectedYears)">>></button>
+             </br>
+           </div>
+           <i class="fa fa-spinner fa-spin fa-2x" ng-show="vm.monthData.length < 3"></i>
+           <canvas
+             ng-show="vm.monthData.length > 2"
+             chart-options="vm.chartKvaPerMonthOptions"
+             chart-legend="true"
+             chart-labels="vm.monthLabels"
+             chart-data="vm.monthData"
+             id="bar"
+             class="chart chart-bar"
+             chart-dataset-override="vm.monthDatasets"
+           >
+           </canvas>
+         </div>
+       </div>
+       <div class="clearfix"></div>
+     </div>
+   </div>
+</div>
+</div>
+</div>

@@ -2,7 +2,7 @@ var Promise = require('bluebird');
 
 module.exports = function(sails) {
 
-    var install = require('./lib/install.js');
+    var setup = require('./lib/setup.js');
     var initialize = require('./lib/initialize.js');
     var teleinfo = require('./lib/teleinfo.js');
     var buffer = require('./lib/buffer.js');
@@ -27,7 +27,7 @@ module.exports = function(sails) {
     });
 
     return {
-      install: install,
+      setup: setup,
       initialize: initialize,
       isNotRed: buffer.isNotRed
     };

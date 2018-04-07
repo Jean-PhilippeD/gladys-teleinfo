@@ -12,4 +12,5 @@ To install this module :
 - Facultative: Create parameter TELEINFO_DELAY = Duration in millisecond to wait before storing each data (default: 15000)
 
 - Install the module in Gladys.
+- Launch command: grunt buildProd
 - Reboot Gladys.
