@@ -202,6 +202,7 @@
           }
           return b;
         });
+        if(!ptecColor.length) ptecColor.push(ptec.data[0]);
         return ptecColor;
       })
       .then(function(ptecColor) {
@@ -248,16 +249,19 @@
           var i = 0;
           var tmpVal = 0;
           result.data.reverse().map(function(a) {
-            ptecColor.reduce(function(c, d) {
-              if(a.dateFormat > c.dateFormat && a.dateFormat < d.dateFormat) {
-                // get the current color
-                tmpColor = c.value;
-              } else if(a.dateFormat >= d.dateFormat) {
-                tmpColor = d.value;
-              }
-              return d;
-            });
-
+            if(ptecColor.length > 1) {
+              ptecColor.reduce(function(c, d) {
+                if(a.dateFormat > c.dateFormat && a.dateFormat < d.dateFormat) {
+                  // get the current color
+                  tmpColor = c.value;
+                } else if(a.dateFormat >= d.dateFormat) {
+                  tmpColor = d.value;
+                }
+                return d;
+              });
+            } else {
+              tmpColor = ptecColor[0].value;
+            }
             i++;
             tmpVal += parseFloat(a.value);
 
