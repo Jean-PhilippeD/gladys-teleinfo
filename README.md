@@ -4,6 +4,8 @@ Gladys hooks to store EDF data through teleinfo
 
 Need Gladys version >= 3.0.0.
 
+# DOES NOT WORK WITH LINKY !!
+
 ## Documentation
 
 To install this module : 
