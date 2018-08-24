@@ -96,6 +96,7 @@
         return deviceService.getDeviceTypesDevice(device);
       })
       .then(function(deviceTypes) {
+        vm.bbr = false
         for(var i = 0; i < deviceTypes.data.length; i++) {
           if(deviceTypes.data[i].tag === 'papp') vm.deviceTypes.papp = deviceTypes.data[i].id;
           if(deviceTypes.data[i].tag === 'ptec') vm.deviceTypes.ptec = deviceTypes.data[i].id;
@@ -104,6 +105,7 @@
           if(deviceTypes.data[i].tag === 'tomorrow') vm.deviceTypes.tomorrow = deviceTypes.data[i].id;
           if(deviceTypes.data[i].tag.match(/sum/)) vm.deviceTypes.sum.push({id: deviceTypes.data[i].id, tag: deviceTypes.data[i].tag});
           if(deviceTypes.data[i].tag.match(/index/)) vm.deviceTypes.index.push({id: deviceTypes.data[i].id, tag: deviceTypes.data[i].tag});
+          if(deviceTypes.data[i].tag.match(/J/)) vm.bbr = true
         }
 
         return deviceService.getStates(vm.deviceTypes.papp);
